@@ -1,4 +1,5 @@
 
+from numpy.core.fromnumeric import shape
 import pandas as pd
 import numpy as np
 import cv2
@@ -161,6 +162,8 @@ for i in range(len(train_df)):
         data.append([new_image_array, 0])
 
 
+print(new_image_array)
+
 data = np.array(data)
 data[0][0].shape
 
@@ -184,7 +187,8 @@ y = []
 for image in data:
     X.append(image[0])
     y.append(image[1])
-    
+
+   
 ## Converting X and y to numpy array as Tensorflow accepts only numpy arrays
 X = np.array(X)
 y = np.array(y)
@@ -195,9 +199,12 @@ X = X/255
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size = 0.2, random_state = 42)
 
 
+print(shape(X_val))
+
 X_train = X_train.reshape(len(X_train), X_train.shape[1], X_train.shape[2], 1)
 X_val = X_val.reshape(len(X_val), X_val.shape[1], X_val.shape[2], 1)
 
+print(shape(X_val))
 
 #==============================================================================================
 #                                   Building the model 
@@ -222,3 +229,8 @@ print("Loaded model from disk")
 loaded_model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 score = loaded_model.evaluate(X_val, y_val, verbose=0)
 print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
+
+
+ypred = loaded_model.predict(X_val)
+print(ypred)
+
