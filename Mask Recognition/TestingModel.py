@@ -59,11 +59,12 @@ Xs = np.array(Xs)
 
 for i in range (0,len(Xs)) : 
     
-    img = cv2.cvtColor(Xs[i], cv2.IMREAD_GRAYSCALE)
+    img = cv2.cvtColor(Xs[i], cv2.COLOR_BGR2GRAY)
     Xs[i]= cv2.resize(img,(image_size,image_size))
-    #cv2.imshow('',img)
-    #cv2.waitKey(0)
-#print(Xs)
+    cv2.imshow('',Xs[i])
+    cv2.waitKey(0)
+
+print(Xs[0])
 
 Xs = Xs/255
 print(len(Xs))
