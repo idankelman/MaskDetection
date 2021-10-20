@@ -6,6 +6,7 @@ face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 mouth_cascade = cv2.CascadeClassifier('Mouth.xml')
 
 bw_threshold = 80
+feather = 0
 font = cv2.FONT_HERSHEY_SIMPLEX
 org = (30, 30)
 weared_mask_font_color = (0, 255, 0)
@@ -46,6 +47,11 @@ while True:
     cv2.imshow('img',img)
     k= cv2.waitKey(30) & 0xff
     if k ==27:
+        i=2
+        for (x, y, w, h) in faces: 
+            cropped_image = img[y-feather:y+h+feather,x-feather:x+w+feather]
+            cv2.imwrite('{}.png'.format(i),cropped_image)
+            i+=1
         break
 
 cap.release()
