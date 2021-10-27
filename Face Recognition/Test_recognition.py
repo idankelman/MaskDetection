@@ -78,6 +78,19 @@ def loadModel(path):
 #                                   image processing
 #=================================================================================
 
+def getPrediction(gray,loaded_model):
+    cropped_image = gray[y-feather:y+h+feather,x-feather:x+w+feather]
+    cropped_image = cv2.resize(cropped_image, (image_size, image_size))
+
+
+    D = []
+    D.append(cropped_image)
+    D = np.array(D)
+    D = D/255
+    D = D.reshape(len(D), D.shape[1], D.shape[2], 1)
+    ypred = loaded_model.predict(D)
+
+    return ypred
 
 
 
@@ -104,30 +117,47 @@ loaded_model = loadModel(model_path)
 
 # load json and create model
 
+#=================================================================================
+#                                    Control Variables 
+#=================================================================================
 
+
+# start frame/FPS
+count = 0
+FPs = 1
+
+
+#image anlyzation controls
 threshHold = 0.8
 image_size = 150
 feather = 0
+
+#visualization controls
 font = cv2.FONT_HERSHEY_SIMPLEX
-org = (30, 30)
-weared_mask_font_color = (0, 255, 0)
-not_weared_mask_font_color = (0, 0, 255)
-thickness = 2
 font_scale = 1
-weared_mask = "Thank You for wearing MASK"
-not_weared_mask = "Please wear MASK to defeat Corona"
-count = 0
-FPs = 15
+T_Font = 0.5
+org = (30, 30)
+Mask_C = (40, 240, 0)
+NMask_C = (40, 0, 240)
+thickness = 0
+
+
+#print sentances 
+Mask_T = "Thank You for wearing MASK"
+NMask_T = "Please wear MASK to defeat Corona"
 
 
 
-cap = cv2.VideoCapture('Video_test_2.mp4')
-#cap.set(cv2.CAP_PROP_POS_FRAMES, 1200)
+#starting the video capture
+cap = cv2.VideoCapture('Video_test.mp4')
+
 
 while True:
 
     cap.set(cv2.CAP_PROP_POS_FRAMES, count)
     count+=FPs
+
+
     ret, img = cap.read()
     img = cv2.flip(img,1)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -149,7 +179,7 @@ while True:
 
     
     if(len(faces) == 0 and len(faces_bw) == 0) and len(faces_adpt) == 0:
-        cv2.putText(img, "No face found...", org, font, font_scale, weared_mask_font_color, thickness, cv2.LINE_AA)
+        cv2.putText(img, "No face found...", org, font, font_scale, Mask_C, thickness, cv2.LINE_AA)
     else:
         for (x, y, w, h) in faces:
             cv2.rectangle(img, (x, y), (x + w, y + h), (255, 255, 255), 2)
@@ -158,25 +188,27 @@ while True:
             mouth_rects = mouth_cascade.detectMultiScale(gray, 1.5, 5)
 
 
-            cropped_image = gray[y-feather:y+h+feather,x-feather:x+w+feather]
-            cropped_image = cv2.resize(cropped_image, (image_size, image_size))
-            #cv2.imwrite('{}.png'.format(i),cropped_image)
-            D = []
-            D.append(cropped_image)
-            D = np.array(D)
-            D = D/255
-            D = D.reshape(len(D), D.shape[1], D.shape[2], 1)
+            
             #print(D.shape)
+            ypred = getPrediction(gray,loaded_model)
+            
 
-            ypred = loaded_model.predict(D)
+            org = (x,y)
+            txt_org = (int(x),int(y-font_scale))
+            YPred_T = 'predict : {}%'.format(round(ypred[0][0]*100,2))
+            NPred_T = 'predict : {}%'.format(100-round(ypred[0][0]*100,2))
 
 
-            if(ypred[0]>= threshHold):
-                cv2.rectangle(img, (x, y), (x + w, y + h), (40, 240, 0), 2)
-                cv2.putText(img, weared_mask, org, font, font_scale, weared_mask_font_color, thickness, cv2.LINE_AA)
+            if(ypred[0][0]>= threshHold):
+                cv2.rectangle(img, org, (x + w, y + h), Mask_C, 2)
+                cv2.putText(img, YPred_T, txt_org, font, T_Font, Mask_C, thickness, cv2.LINE_AA)
+                #cv2.putText(img, Mask_T, org, font, font_scale, Mask_C, thickness, cv2.LINE_AA)
+                #cv2.putText(img,'predict : {}%'.format(ypred*100),(x+ (w/2) ,y-font_scale),font,font_scale,Mask_C,thickness,cv2.LINE_AA)
             else:
-                cv2.rectangle(img, (x, y), (x + w, y + h), (40, 0, 240), 2)
-                cv2.putText(img, not_weared_mask, org, font, font_scale, not_weared_mask_font_color, thickness, cv2.LINE_AA)
+                cv2.putText(img, NPred_T, txt_org, font, T_Font, NMask_C, thickness, cv2.LINE_AA)
+                #cv2.putText(img,Pred_T,(x+ (w/2) ,y-font_scale),font,font_scale,NMask_C,thickness,cv2.LINE_AA)
+                cv2.rectangle(img, org, (x + w, y + h), NMask_C, 2)
+                #cv2.putText(img, NMask_T, org, font, font_scale, NMask_C, thickness, cv2.LINE_AA)
         
             
 
