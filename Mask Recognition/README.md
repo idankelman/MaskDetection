@@ -87,19 +87,12 @@ a software that recognizes people that does not put their mask on properly and a
 
 
 
-### question for Rachel : 
+## Use Case Diagram : 
 
-- where can we get data to test on 
+![image](https://user-images.githubusercontent.com/80175752/141981305-b5052b0f-e967-4772-9092-0ab91953f2b1.png)
 
-- where and when do we get our camera 
 
-- do we have a budget 
 
-- can we even place a surveillance camera in a public setting like a classroom 
-
-- who can we go to with our questions ? 
-
-- can we design our UI / UX or do we have to follow a specific guideline 
-
+## UML Diagram :
   
-
+![image](https://user-images.githubusercontent.com/80175752/141981187-09aa5403-d0bb-403c-a1c5-abc3740f5271.png)
