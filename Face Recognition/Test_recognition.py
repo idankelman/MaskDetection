@@ -124,7 +124,7 @@ loaded_model = loadModel(model_path)
 
 # start frame/FPS
 count = 0
-FPs = 1
+FPs = 10
 
 
 #image anlyzation controls
@@ -152,19 +152,26 @@ NMask_T = "Please wear MASK to defeat Corona"
 cap = cv2.VideoCapture('Video_test.mp4')
 
 
+
+
+#=================================================================================
+#                                    anlyze video 
+#=================================================================================
+
+
 while True:
 
     cap.set(cv2.CAP_PROP_POS_FRAMES, count)
     count+=FPs
 
-
     ret, img = cap.read()
     img = cv2.flip(img,1)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-
-    #Hist = cv2.calcHist([gray],[0],None,[256],[0,256])
     bw_threshold = 60
+    
+
+   
+    #Hist = cv2.calcHist([gray],[0],None,[256],[0,256])
     #Hist = Hist/256
     #print(bw_threshold)
     #plt.hist(gray.ravel(),256,[0,256])
