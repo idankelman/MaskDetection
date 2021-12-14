@@ -150,11 +150,11 @@ train_df.head()
 
 
 data = []
-image_size = 150
+image_size = 224
 
 for i in range(len(train_df)):
     ## Converting the image into grayscale
-    img_array = cv2.imread(train_df["image_path"][i], cv2.IMREAD_GRAYSCALE)
+    img_array = cv2.imread(train_df["image_path"][i])
 
     ## Resizing the array
     new_image_array = cv2.resize(img_array, (image_size, image_size))
@@ -207,19 +207,47 @@ X_train, X_val, y_train, y_val = train_test_split(X, y, test_size = 0.2, random_
 
 
 
+#Model #1
+#==============================================================================================
+
+# model = Sequential()
+# model.add(Conv2D(64, (3, 3), activation = "relu"))
+# model.add(Conv2D(64, (3, 3), activation = "relu"))
+# model.add(MaxPool2D(pool_size= (3, 3)))
+# model.add(Flatten())
+# model.add(Dense(128, activation = "relu"))
+# model.add(Dense(1, activation = "sigmoid"))
+# # model.summary()
+# model.compile(optimizer='adam',
+#               loss=tf.keras.losses.BinaryCrossentropy(),
+#               metrics=['accuracy'])
+
+
+# X_train = X_train.reshape(-1, 32, 150, 150)
+## Reshaping training set to match Conc2D
+
+
+#Model #2
+#==============================================================================================
+
 model = Sequential()
-model.add(Conv2D(64, (3, 3), activation = "relu"))
-model.add(Conv2D(64, (3, 3), activation = "relu"))
-model.add(MaxPool2D(pool_size= (3, 3)))
+
+PreTrained = tf.keras.applications.ResNet50V2(
+    include_top=False,
+    weights="imagenet",
+    classes=1000,
+    classifier_activation="softmax",
+)
+
+model.add(PreTrained)
 model.add(Flatten())
 model.add(Dense(128, activation = "relu"))
 model.add(Dense(1, activation = "sigmoid"))
-# model.summary()
+
 model.compile(optimizer='adam',
               loss=tf.keras.losses.BinaryCrossentropy(),
               metrics=['accuracy'])
-# X_train = X_train.reshape(-1, 32, 150, 150)
-## Reshaping training set to match Conc2D
+
 
 
 
@@ -230,7 +258,7 @@ model.compile(optimizer='adam',
 X_train = X_train.reshape(len(X_train), X_train.shape[1], X_train.shape[2], 1)
 X_val = X_val.reshape(len(X_val), X_val.shape[1], X_val.shape[2], 1)
 
-history = model.fit(X_train, y_train, epochs=5, batch_size = 50)
+history = model.fit(X_train, y_train, epochs=2)
 
 
 #==============================================================================================
