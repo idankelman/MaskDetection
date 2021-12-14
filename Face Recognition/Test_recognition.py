@@ -24,7 +24,8 @@ import numpy as np
 import cv2
 import os
 import glob
-
+#os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.5/bin")
+#os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.5/bin/bin")
 import pathlib
 
 from sklearn.model_selection import train_test_split
@@ -37,6 +38,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import model_from_json
 
 import seaborn as sns
+
 
 
 
@@ -79,29 +81,43 @@ def loadModel(path):
 #=================================================================================
 
 def getPrediction(gray,loaded_model):
-    cropped_image = gray[y-feather:y+h+feather,x-feather:x+w+feather]
-    cropped_image = cv2.resize(cropped_image, (image_size, image_size))
+    with tf.device('/gpu:0'):
+        cropped_image = gray[y-feather:y+h+feather,x-feather:x+w+feather]
+        cropped_image = cv2.resize(cropped_image, (image_size, image_size))
 
 
-    D = []
-    D.append(cropped_image)
-    D = np.array(D)
-    D = D/255
-    D = D.reshape(len(D), D.shape[1], D.shape[2], 1)
-    ypred = loaded_model.predict(D)
+        D = []
+        D.append(cropped_image)
+        D = np.array(D)
+        D = D/255
+        D = D.reshape(len(D), D.shape[1], D.shape[2], 1)
+        
+        ypred = loaded_model.predict(D)
 
     return ypred
 
 
 
+def SwitchCap(CapVideo,path):
+    if CapVideo:
+        try:
+            cap= cv2.VideoCapture(0)
+            print('Swtiching Source to Cam')
+        except:
+            print('NO CAMERA')
+            cap =cv2.VideoCapture(path)
 
+    else:
+        print('Swtiching Source to Video')
+        cap =cv2.VideoCapture(path)
+    return cap
 
 
 
 #=================================================================================
 #                                    Load Files
 #=================================================================================
-
+#tf.debugging.set_log_device_placement(True)
 
 
 model_path = 'Saved_Models/model_final.json'
@@ -124,7 +140,7 @@ loaded_model = loadModel(model_path)
 
 # start frame/FPS
 count = 0
-FPs = 10
+FPs = 15
 
 
 #image anlyzation controls
@@ -140,6 +156,8 @@ org = (30, 30)
 Mask_C = (40, 240, 0)
 NMask_C = (40, 0, 240)
 thickness = 0
+CapVideo = True
+VideoPath = 'Video_test_2.mp4'
 
 
 #print sentances 
@@ -149,8 +167,8 @@ NMask_T = "Please wear MASK to defeat Corona"
 
 
 #starting the video capture
-cap = cv2.VideoCapture('Video_test.mp4')
-
+cap = cv2.VideoCapture(VideoPath)
+#cap = cv2.VideoCapture(0)
 
 
 
@@ -183,7 +201,7 @@ while True:
     faces_adpt = face_cascade.detectMultiScale(adp_th, 1.1, 4)
 
     
-
+    cv2.putText(img, "FPS{}".format(FPs),(0,30), font, font_scale, Mask_C, thickness, cv2.LINE_AA)
     
     if(len(faces) == 0 and len(faces_bw) == 0) and len(faces_adpt) == 0:
         cv2.putText(img, "No face found...", org, font, font_scale, Mask_C, thickness, cv2.LINE_AA)
@@ -223,7 +241,18 @@ while True:
     cv2.imshow('img',img)
     #cv2.imshow('img',adp_th)
     k= cv2.waitKey(30) & 0xff
-    if k ==27:
+    #print(k)
+    if k== 97: 
+        FPs-=1
+        if FPs<=0 :
+            Fps = 1
+
+    elif k==100:
+        FPs+=1
+        if FPs>30:
+            Fps = 30 
+            
+    elif k ==27:
         i=2
         for (x, y, w, h) in faces: 
             cropped_image = img[y-feather:y+h+feather,x-feather:x+w+feather]
@@ -231,6 +260,12 @@ while True:
             i+=1
         break
 
+    elif k == 32:
+        cap.release()
+        cap =SwitchCap(CapVideo,VideoPath) 
+        CapVideo = not CapVideo
+        
+   
 cap.release()
 
 

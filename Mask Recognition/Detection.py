@@ -230,7 +230,7 @@ model.compile(optimizer='adam',
 X_train = X_train.reshape(len(X_train), X_train.shape[1], X_train.shape[2], 1)
 X_val = X_val.reshape(len(X_val), X_val.shape[1], X_val.shape[2], 1)
 
-history = model.fit(X_train, y_train, epochs=2, batch_size = 50)
+history = model.fit(X_train, y_train, epochs=5, batch_size = 50)
 
 
 #==============================================================================================
