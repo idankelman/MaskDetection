@@ -140,7 +140,7 @@ loaded_model = loadModel(model_path)
 
 # start frame/FPS
 count = 0
-FPs = 15
+FPs = 0
 
 
 #image anlyzation controls
@@ -157,7 +157,7 @@ Mask_C = (40, 240, 0)
 NMask_C = (40, 0, 240)
 thickness = 0
 CapVideo = True
-VideoPath = 'Video_test_2.mp4'
+VideoPath = 'Video_test.mp4'
 
 
 #print sentances 
