@@ -1,0 +1,22 @@
+{%extends 'main/base.html'%}
+
+{%load static%}
+
+{%block includes%}
+<link rel="stylesheet"  type="text/css" href="{% static './css/home.css'%} ">
+{%endblock%}
+
+{%block title %}
+<h1>Home Page</h1>
+{%endblock%}
+
+
+{%block content%}
+<div class="container">
+    <button>hello</button>
+</div>
+
+<div class = "ImgContainer">
+    <img src = {{Img}}>
+</div>
+{%endblock%}
