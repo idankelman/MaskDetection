@@ -22,8 +22,8 @@
 
 <h1 id="WSS"></h1>
 
-<script>
-    var socket = new Webscoket("ws://localhost:8000/ws/test/");
+    <script>
+    var socket = new WebScoket("ws://localhost:9999/ws/test/");
     socket.onMessage(function(msg){
         console.log(msg);
         var data = JSON.parse(msg.data);
