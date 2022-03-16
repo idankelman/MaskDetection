@@ -25,6 +25,7 @@ Usage - formats:
 """
 
 import argparse
+from asyncio.windows_events import NULL
 import os
 import sys
 from pathlib import Path
@@ -32,6 +33,7 @@ from pathlib import Path
 import cv2
 import torch
 import torch.backends.cudnn as cudnn
+import threading
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -46,6 +48,28 @@ from utils.general import (LOGGER, check_file, check_img_size, check_imshow, che
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, time_sync
 
+from flask import Flask, render_template, Response
+from camera import Video
+import os
+import cv2
+app=Flask(__name__)
+
+def gen():
+    while True:
+        ret, jpg=cv2.imencode('.jpg',frame2)
+        jpg = jpg.tobytes()
+        if jpg is not None:
+            yield(b'--frame\r\n'
+            b'Content-Type:  image/jpeg\r\n\r\n' + jpg +
+                b'\r\n\r\n')
+
+@app.route('/video')
+
+def video():
+    return Response(gen(),
+    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+threading.Thread(target=lambda: app.run(host="localhost", port=5000, debug=True, use_reloader=False)).start()
 
 @torch.no_grad()
 def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
@@ -183,7 +207,8 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
             if view_img:
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(1)  # 1 millisecond
-
+            global frame2
+            frame2 = im0
             # Save results (image with detections)
             if save_img:
                 if dataset.mode == 'image':
