@@ -1,0 +1,28 @@
+<html>
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	</head>
+	<body onload = "requestVideo()">
+		<img id="img"></img>
+	</body>
+	<script>
+	
+	function requestVideo(){
+	console.log('trying to connect')
+	const socket = new WebSocket('ws://localhost:5000');
+
+		// Listen for messages
+		socket.addEventListener('message', function (event) {
+		
+			var res = JSON.parse(event.data);
+			console.log(res)
+			//$('#img').attr('src', `data:image/PNG;base64,${res.result[0]}`).css('border', '2px solid black');
+			$('#img').attr('src', `data:image/jpeg;base64,${res.scene_img}`).css('border', '2px solid black');
+		});
+
+	}
+	
+	</script>
+</html>
+
+

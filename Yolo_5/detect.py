@@ -25,12 +25,16 @@ Usage - formats:
 """
 
 import argparse
+from asyncio import start_server
 from asyncio.windows_events import NULL
+from glob import glob
+from itertools import count
 import os
 import sys
 from pathlib import Path
 
 import cv2
+import numpy
 import torch
 import torch.backends.cudnn as cudnn
 import threading
@@ -44,32 +48,78 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 from models.common import DetectMultiBackend
 from utils.datasets import IMG_FORMATS, VID_FORMATS, LoadImages, LoadStreams
 from utils.general import (LOGGER, check_file, check_img_size, check_imshow, check_requirements, colorstr,
-                           increment_path, non_max_suppression, print_args, scale_coords, strip_optimizer, xyxy2xywh)
+                           increment_path, labels_to_class_weights, non_max_suppression, print_args, scale_coords, strip_optimizer, xyxy2xywh)
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, time_sync
-
-from flask import Flask, render_template, Response
-from camera import Video
+import json
 import os
 import cv2
-app=Flask(__name__)
+import io
+from base64 import encodebytes
+from PIL import Image
 
-def gen():
+
+
+
+def get_response_image(img):
+    imageRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    im = Image.fromarray(imageRGB.astype("uint8"))
+    byte_arr = io.BytesIO()
+    im.save(byte_arr, format='jpeg') # convert the PIL image to byte array
+    encoded_img = encodebytes(byte_arr.getvalue()).decode('ascii') # encode as base64
+    return encoded_img
+    
+
+import websockets
+import asyncio
+import time
+async def handler(websocket, path):
     while True:
-        ret, jpg=cv2.imencode('.jpg',frame2)
-        jpg = jpg.tobytes()
-        if jpg is not None:
-            yield(b'--frame\r\n'
-            b'Content-Type:  image/jpeg\r\n\r\n' + jpg +
-                b'\r\n\r\n')
+        try:
+            if len(images_arr)==0:
+                time.sleep(0.1)
+            encoded_images=[]
+            dict1 = {}
+            dict1['scene_img'] = get_response_image(images_arr[0])
+            
+            for i in range(1, len(images_arr)):
+                encoded_images.append({'img': get_response_image(images_arr[i]['img']), 'label': images_arr[i]['label']})
+            dict1['persons'] = encoded_images
+            if(len(images_arr)==0):
+                print(dict1)
+            #print(len(dict1['faces_detected'][0]))
+            await websocket.send(json.dumps(dict1))
+            #await asyncio.sleep(0.02)
+        except Exception:
+            pass
 
-@app.route('/video')
+def start_loop(loop, server):
+    loop.run_until_complete(server)
+    loop.run_forever()
+    
 
-def video():
-    return Response(gen(),
-    mimetype='multipart/x-mixed-replace; boundary=frame')
+new_loop = asyncio.get_event_loop()
+start_server1 = websockets.serve(handler, "127.0.0.1", 5000, loop=new_loop)
+global t
+t = threading.Thread(target=start_loop, args=(new_loop, start_server1))
+t.start()
+import signal
 
-threading.Thread(target=lambda: app.run(host="localhost", port=5000, debug=True, use_reloader=False)).start()
+def handler(signum, frame):
+    # print('here')
+    # new_loop.stop()
+    # print('sucsses')
+    os.kill(os.getpid(), signal.SIGTERM)
+    
+
+
+signal.signal(signal.SIGINT, handler)
+
+
+
+#threading.Thread(target=lambda: app.run(host="localhost", port=5000, debug=True, use_reloader=False)).start()
+
+
 
 @torch.no_grad()
 def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
@@ -160,6 +210,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
         # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
 
         # Process predictions
+       
         for i, det in enumerate(pred):  # per image
             seen += 1
             if webcam:  # batch_size >= 1
@@ -167,7 +218,9 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                 s += f'{i}: '
             else:
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
-
+            global images_arr
+            images_arr = []
+            images_arr.append(im0)
             p = Path(p)  # to Path
             save_path = str(save_dir / p.name)  # im.jpg
             txt_path = str(save_dir / 'labels' / p.stem) + ('' if dataset.mode == 'image' else f'_{frame}')  # im.txt
@@ -185,7 +238,19 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
                 # Write results
+                #print(reversed(det))
+                
+                global labels
+                labels = []
+                
+                counter = 0
+             
                 for *xyxy, conf, cls in reversed(det):
+                    #print(type(xyxy[1].numpy()))
+                    cropped_face = im0[int(xyxy[1].numpy()):int(xyxy[3].numpy()),int(xyxy[0].numpy()):int(xyxy[2].numpy())]
+                    
+                    
+                    
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
@@ -194,14 +259,18 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
 
                     if save_img or save_crop or view_img:  # Add bbox to image
                         c = int(cls)  # integer class
-                        label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
+                        try:
+                            label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
+                            images_arr.append({'img':cropped_face, 'label': label.split(' ')[0]})
+                        except:
+                            print('label doesnt exist')
                         annotator.box_label(xyxy, label, color=colors(c, True))
                         if save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
 
             # Print time (inference-only)
             LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
-
+            
             # Stream results
             im0 = annotator.result()
             if view_img:
