@@ -115,9 +115,29 @@ def handler(signum, frame):
 
 signal.signal(signal.SIGINT, handler)
 
+from flask import Flask
+app = Flask(__name__)
+import subprocess
+@app.route('/roomConfig')
+def detect_chairs():
+    #TODO change the source to cv2.read()
+    program = 'python roomConfig/yolov5-master/detect.py --class 56 --source roomConfig/yolov5-master/test3.jpg'
+    processes = subprocess.Popen(program)
+    processes.wait()
+    not_created = True
+    while not_created:
+        try:
+            with open('room_config3.json') as f:
+                d = json.load(f)
+                not_created = False
+                return d
+        except IOError:
+            time.sleep(1)
+            print('waiting for json')    
+    
 
 
-#threading.Thread(target=lambda: app.run(host="localhost", port=5000, debug=True, use_reloader=False)).start()
+threading.Thread(target=lambda: app.run(host="localhost", port=3000, debug=True, use_reloader=False)).start()
 
 
 
