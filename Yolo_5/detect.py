@@ -34,6 +34,7 @@ import sys
 from pathlib import Path
 
 import cv2
+from cv2 import rectangle
 import numpy
 import torch
 import torch.backends.cudnn as cudnn
@@ -113,16 +114,21 @@ def handler(signum, frame):
     
 
 
+start_main = False    
 signal.signal(signal.SIGINT, handler)
+
+from flask import Flask
+app = Flask(__name__)
+import subprocess
 
 from flask import Flask
 from flask_cors import CORS, cross_origin
 import subprocess
 
-
 app = Flask(__name__)
 @app.route('/roomConfig')
 @cross_origin()
+
 def detect_chairs():
     #TODO change the source to cv2.read()
     program = 'python roomConfig/yolov5-master/detect.py --class 56 --source roomConfig/yolov5-master/test3.jpg'
@@ -132,18 +138,44 @@ def detect_chairs():
     while not_created:
         try:
             with open('room_config3.json') as f:
-                d = json.load(f)
+                global room_config
+                global rectangle_center
+                rectangle_center = []
+                room_config = json.load(f)
+                i=0
+                for row in room_config:
+                    rectangle_center.append([])
+                    for chair in room_config[row]:
+                        rectangle_center[i].append({'x_center': (int(room_config[row][chair]['x0'])+ int(room_config[row][chair]['x1']))/2,  
+                                                      'y_center': (int(room_config[row][chair]['y0'])+ int(room_config[row][chair]['y1']))/2})
+                    i+=1
+                print(rectangle_center)
+                global start_main
+                start_main = True
                 not_created = False
-                return d
+                return room_config
         except IOError:
             time.sleep(1)
             print('waiting for json')    
-    
 
 
 threading.Thread(target=lambda: app.run(host="localhost", port=5001, debug=True, use_reloader=False)).start()
 
-
+#import pyrebase
+config = {'apiKey': "AIzaSyBnU_-WiH0q9nvVyNZ82DgrMi1RMrSOJQk",
+  'authDomain': "mask-detection-system-d20b3.firebaseapp.com",
+  'databaseURL': "https://mask-detection-system-d20b3-default-rtdb.europe-west1.firebasedatabase.app",
+  'projectId': "mask-detection-system-d20b3",
+  'storageBucket': "mask-detection-system-d20b3.appspot.com",
+  'messagingSenderId': "230441871776",
+  'appId': "1:230441871776:web:a8d46d1314a5b29f805cc5",
+  'measurementId': "G-KN8DXJQW5H"
+}
+from datetime import date
+#firebase = pyrebase.initialize_app(config)
+global db
+#db = firebase.database()
+#db.child("Users").child("Video1").set({'Date': json.dumps(date.today(), indent=4, default=str)})
 
 @torch.no_grad()
 def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
@@ -372,4 +404,6 @@ def main(opt):
 
 if __name__ == "__main__":
     opt = parse_opt()
+    while start_main == False:
+        time.sleep(0.5)
     main(opt)
