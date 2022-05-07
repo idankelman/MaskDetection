@@ -35,3 +35,11 @@ seaborn>=0.11.0
 # pycocotools>=2.0  # COCO mAP
 # roboflow
 thop  # FLOPs computation
+
+
+
+# ---------------------------------------------
+#custom added packages 
+websockets >=10.2
+flask >= 2.1.2
+

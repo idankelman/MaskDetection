@@ -116,9 +116,13 @@ def handler(signum, frame):
 signal.signal(signal.SIGINT, handler)
 
 from flask import Flask
-app = Flask(__name__)
+from flask_cors import CORS, cross_origin
 import subprocess
+
+
+app = Flask(__name__)
 @app.route('/roomConfig')
+@cross_origin()
 def detect_chairs():
     #TODO change the source to cv2.read()
     program = 'python roomConfig/yolov5-master/detect.py --class 56 --source roomConfig/yolov5-master/test3.jpg'
@@ -137,7 +141,7 @@ def detect_chairs():
     
 
 
-threading.Thread(target=lambda: app.run(host="localhost", port=3000, debug=True, use_reloader=False)).start()
+threading.Thread(target=lambda: app.run(host="localhost", port=5001, debug=True, use_reloader=False)).start()
 
 
 
