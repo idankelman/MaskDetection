@@ -8,9 +8,9 @@
     },
     "row2": {
         "chair1": {
-            "NoMask": 0,
-            "Mask": 0,
-            "Improper": 0
+            "NoMask": 0.0,
+            "Mask": 15.799999999999999,
+            "Improper": 1.2000000000000017
         },
         "chair2": {
             "NoMask": 0,
@@ -36,7 +36,7 @@
     "row3": {
         "chair1": {
             "NoMask": 0,
-            "Mask": 55.80000000000052,
+            "Mask": 0,
             "Improper": 0
         },
         "chair2": {

@@ -108,17 +108,43 @@ t = threading.Thread(target=start_loop, args=(new_loop, start_server1))
 t.start()
 import signal
 
+def format_room_statistics_to_seconds(session_length):
+    for row_num, row in enumerate(room_statistics):
+        for col_num, col in enumerate(room_statistics[f'row{row_num+1}']):
+            no_mask_frames = room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['NoMask']
+            mask_frames = room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['Mask']
+            improper_frames = room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['Improper']
+            
+            total_frames = no_mask_frames+mask_frames+improper_frames
+            if total_frames != 0:
+                room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['NoMask'] = (no_mask_frames/total_frames) * session_length
+                room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['Mask'] =  (mask_frames/total_frames) * session_length
+                room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['Improper'] =  (improper_frames/total_frames) * session_length
+
+
+
+
+def get_sec(time_str):
+    """Get seconds from time."""
+    h, m, s = time_str.split(':')
+    s = s.split('.')[0]
+    return int(h) * 3600 + int(m) * 60 + int(s)
+
 def handler(signum, frame):
     # print('here')
     # new_loop.stop()
     # print('sucsses')
-    from datetime import datetime
+    # Print results
+    import datetime
 
-    now = datetime.now()
+    end_time = datetime.datetime.now()
 
-    current_time = now.strftime("%H:%M:%S")
+    exit_time = end_time.strftime("%H:%M:%S")
+    session_length = end_time - start_time
+    format_room_statistics_to_seconds(get_sec(str(session_length)))
     db.child("Users").child("Video2").set({'Date': json.dumps(date.today(), indent=4, default=str),
-                                            'Time': current_time,
+                                            'Time': json.dumps(exit_time, indent=4, default=str),
+                                            'Duration': json.dumps(str(session_length), indent=4, default=str),
                                             'Statistics':  json.dumps(room_statistics, indent=4)})
     with open('room_statistics.json', 'w') as f:
         json.dump(room_statistics, f, indent=4)
@@ -161,6 +187,13 @@ def detect_chairs():
                 global start_main
                 start_main = True
                 not_created = False
+
+                import datetime
+                global start_time
+                start_time = datetime.datetime.now()
+                current_time = start_time.strftime("%H:%M:%S")
+                db.child("Users").child("Video2").set({'Time At Start': current_time})
+
                 return room_config
         except IOError:
             time.sleep(1)
@@ -186,11 +219,7 @@ global db
 db = firebase.database()
 from datetime import datetime
 
-now = datetime.now()
-global start_time
-start_time = time.time()
-current_time = now.strftime("%H:%M:%S")
-db.child("Users").child("Video2").set({'Time At Start': current_time})
+
 
 @torch.no_grad()
 def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
@@ -376,13 +405,16 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                     vid_writer[i].write(im0)
 
     # Print results
-    from datetime import datetime
+    import datetime
 
-    now = datetime.now()
+    end_time = datetime.datetime.now()
 
-    current_time = now.strftime("%H:%M:%S")
+    exit_time = end_time.strftime("%H:%M:%S")
+    session_length = end_time - start_time
+    format_room_statistics_to_seconds(get_sec(str(session_length)))
     db.child("Users").child("Video2").set({'Date': json.dumps(date.today(), indent=4, default=str),
-                                            'Time': current_time,
+                                            'Time': json.dumps(exit_time, indent=4, default=str),
+                                            'Duration': json.dumps(str(session_length), indent=4, default=str),
                                             'Statistics':  json.dumps(room_statistics, indent=4)})
     with open('room_statistics.json', 'w') as f:
         json.dump(room_statistics, f, indent=4)
