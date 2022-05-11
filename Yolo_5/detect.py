@@ -30,6 +30,7 @@ from asyncio.windows_events import NULL
 from glob import glob
 from itertools import count
 import os
+import statistics
 import sys
 from pathlib import Path
 
@@ -123,7 +124,7 @@ import subprocess
 @app.route('/roomConfig')
 def detect_chairs():
     #TODO change the source to cv2.read()
-    program = 'python roomConfig/yolov5-master/detect.py --class 56 --source roomConfig/yolov5-master/room_config_test.jpg'
+    program = 'python roomConfig/yolov5-master/detect.py --class 56 --source roomConfig/yolov5-master/test3.jpg'
     processes = subprocess.Popen(program)
     processes.wait()
     not_created = True
@@ -141,7 +142,6 @@ def detect_chairs():
                         rectangle_center[i].append({'x_center': (int(room_config[row][chair]['x0'])+ int(room_config[row][chair]['x1']))/2,  
                                                       'y_center': (int(room_config[row][chair]['y0'])+ int(room_config[row][chair]['y1']))/2})
                     i+=1
-                print(rectangle_center)
                 global start_main
                 start_main = True
                 not_created = False
@@ -151,8 +151,9 @@ def detect_chairs():
             print('waiting for json')    
 
 
-threading.Thread(target=lambda: app.run(host="localhost", port=3000, debug=True, use_reloader=False)).start()
-
+th = threading.Thread(target=lambda: app.run(host="localhost", port=3000, debug=True, use_reloader=False))
+th.daemon = True
+th.start()
 import pyrebase
 config = {'apiKey': "AIzaSyBnU_-WiH0q9nvVyNZ82DgrMi1RMrSOJQk",
   'authDomain': "mask-detection-system-d20b3.firebaseapp.com",
@@ -307,11 +308,15 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
 
                     if save_img or save_crop or view_img:  # Add bbox to image
                         c = int(cls)  # integer class
-                        try:
-                            label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
-                            images_arr.append({'img':cropped_face, 'label': label.split(' ')[0]})
-                        except:
-                            print('label doesnt exist')
+                        #try:
+                        label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
+                        center_x = (int(xyxy[2].numpy())- int(xyxy[0].numpy()))/2 + int(xyxy[0].numpy())
+                        center_y = (int(xyxy[3].numpy())- int(xyxy[1].numpy()))/2 + int(xyxy[1].numpy())
+                        row, col = calc_nearest_rectangle(center_x, center_y)
+                        print(f'row is: {row} col is{col}')
+                        images_arr.append({'img':cropped_face, 'label': label.split(' ')[0], 'row': row, 'col': col})
+                        #except:
+                            #print('label doesnt exist')
                         annotator.box_label(xyxy, label, color=colors(c, True))
                         if save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
@@ -354,6 +359,23 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
     if update:
         strip_optimizer(weights)  # update model (to fix SourceChangeWarning)
 
+def calc_nearest_rectangle(person_x_center, person_y_center):
+    import math
+    point = [person_x_center, person_y_center]
+    min_distance = 99999999
+    minmum_row = 0
+    minmum_col = 0
+    for row_num, row in enumerate(rectangle_center):
+        for col_num, chair in enumerate(row):
+            dist = math.dist(point, [chair['x_center'], chair['y_center']])
+            # print(point)
+            # print([chair['x_center'], chair['y_center']])
+            # print(dist)
+            if min_distance > dist:
+                min_distance = dist
+                minmum_row = row_num
+                minmum_col = col_num
+    return minmum_row+1, minmum_col+1
 
 def parse_opt():
     parser = argparse.ArgumentParser()
