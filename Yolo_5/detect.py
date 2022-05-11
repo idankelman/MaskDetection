@@ -85,7 +85,8 @@ async def handler(websocket, path):
             dict1['scene_img'] = get_response_image(images_arr[0])
             
             for i in range(1, len(images_arr)):
-                encoded_images.append({'img': get_response_image(images_arr[i]['img']), 'label': images_arr[i]['label']})
+                encoded_images.append({'img': get_response_image(images_arr[i]['img']), 'label': images_arr[i]['label'],
+                                        'row': images_arr[i]['row'], 'col': images_arr[i]['col']})
             dict1['persons'] = encoded_images
             if(len(images_arr)==0):
                 print(dict1)
@@ -111,6 +112,17 @@ def handler(signum, frame):
     # print('here')
     # new_loop.stop()
     # print('sucsses')
+    from datetime import datetime
+
+    now = datetime.now()
+
+    current_time = now.strftime("%H:%M:%S")
+    db.child("Users").child("Video2").set({'Date': json.dumps(date.today(), indent=4, default=str),
+                                            'Time': current_time,
+                                            'Statistics':  json.dumps(room_statistics, indent=4)})
+    with open('room_statistics.json', 'w') as f:
+        json.dump(room_statistics, f, indent=4)
+    time.sleep(2)
     os.kill(os.getpid(), signal.SIGTERM)
     
 
@@ -133,12 +145,16 @@ def detect_chairs():
             with open('room_config3.json') as f:
                 global room_config
                 global rectangle_center
+                global room_statistics
+                room_statistics = {}
                 rectangle_center = []
                 room_config = json.load(f)
                 i=0
-                for row in room_config:
+                for i, row in enumerate(room_config):
                     rectangle_center.append([])
-                    for chair in room_config[row]:
+                    room_statistics[f'row{i+1}'] = {}
+                    for j, chair in enumerate(room_config[row]):
+                        room_statistics[f'row{i+1}'][f'chair{j+1}'] = {'NoMask': 0, 'Mask': 0, 'Improper': 0}
                         rectangle_center[i].append({'x_center': (int(room_config[row][chair]['x0'])+ int(room_config[row][chair]['x1']))/2,  
                                                       'y_center': (int(room_config[row][chair]['y0'])+ int(room_config[row][chair]['y1']))/2})
                     i+=1
@@ -168,7 +184,13 @@ from datetime import date
 firebase = pyrebase.initialize_app(config)
 global db
 db = firebase.database()
-db.child("Users").child("Video1").set({'Date': json.dumps(date.today(), indent=4, default=str)})
+from datetime import datetime
+
+now = datetime.now()
+global start_time
+start_time = time.time()
+current_time = now.strftime("%H:%M:%S")
+db.child("Users").child("Video2").set({'Time At Start': current_time})
 
 @torch.no_grad()
 def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
@@ -312,9 +334,12 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
                         center_x = (int(xyxy[2].numpy())- int(xyxy[0].numpy()))/2 + int(xyxy[0].numpy())
                         center_y = (int(xyxy[3].numpy())- int(xyxy[1].numpy()))/2 + int(xyxy[1].numpy())
+                        print(f'center x is: {center_x}, center y is: {center_y}')
                         row, col = calc_nearest_rectangle(center_x, center_y)
                         print(f'row is: {row} col is{col}')
-                        images_arr.append({'img':cropped_face, 'label': label.split(' ')[0], 'row': row, 'col': col})
+                        label = label.split(' ')[0]
+                        room_statistics[f'row{row}'][f'chair{col}'][label] += 0.1
+                        images_arr.append({'img':cropped_face, 'label': label, 'row': row, 'col': col})
                         #except:
                             #print('label doesnt exist')
                         annotator.box_label(xyxy, label, color=colors(c, True))
@@ -332,7 +357,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
             global frame2
             frame2 = im0
             # Save results (image with detections)
-            if save_img:
+            if save_img: 
                 if dataset.mode == 'image':
                     cv2.imwrite(save_path, im0)
                 else:  # 'video' or 'stream'
@@ -351,6 +376,16 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                     vid_writer[i].write(im0)
 
     # Print results
+    from datetime import datetime
+
+    now = datetime.now()
+
+    current_time = now.strftime("%H:%M:%S")
+    db.child("Users").child("Video2").set({'Date': json.dumps(date.today(), indent=4, default=str),
+                                            'Time': current_time,
+                                            'Statistics':  json.dumps(room_statistics, indent=4)})
+    with open('room_statistics.json', 'w') as f:
+        json.dump(room_statistics, f, indent=4)
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
     if save_txt or save_img:
@@ -366,7 +401,8 @@ def calc_nearest_rectangle(person_x_center, person_y_center):
     minmum_row = 0
     minmum_col = 0
     for row_num, row in enumerate(rectangle_center):
-        for col_num, chair in enumerate(row):
+        col_num = 0
+        for chair in row:
             dist = math.dist(point, [chair['x_center'], chair['y_center']])
             # print(point)
             # print([chair['x_center'], chair['y_center']])
@@ -375,6 +411,7 @@ def calc_nearest_rectangle(person_x_center, person_y_center):
                 min_distance = dist
                 minmum_row = row_num
                 minmum_col = col_num
+            col_num+=1
     return minmum_row+1, minmum_col+1
 
 def parse_opt():

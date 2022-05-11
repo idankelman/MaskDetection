@@ -1,0 +1,127 @@
+{
+    "row1": {
+        "chair1": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        }
+    },
+    "row2": {
+        "chair1": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair2": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair3": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair4": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair5": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        }
+    },
+    "row3": {
+        "chair1": {
+            "NoMask": 0,
+            "Mask": 55.80000000000052,
+            "Improper": 0
+        },
+        "chair2": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair3": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair4": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair5": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair6": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        }
+    },
+    "row4": {
+        "chair1": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair2": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair3": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair4": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair5": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair6": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        }
+    },
+    "row5": {
+        "chair1": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair2": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair3": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair4": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        },
+        "chair5": {
+            "NoMask": 0,
+            "Mask": 0,
+            "Improper": 0
+        }
+    }
+}
