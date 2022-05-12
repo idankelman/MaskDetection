@@ -116,10 +116,13 @@ def format_room_statistics_to_seconds(session_length):
             improper_frames = room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['Improper']
             
             total_frames = no_mask_frames+mask_frames+improper_frames
-            if total_frames != 0:
-                room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['NoMask'] = (no_mask_frames/total_frames) * session_length
-                room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['Mask'] =  (mask_frames/total_frames) * session_length
-                room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['Improper'] =  (improper_frames/total_frames) * session_length
+            # if total_frames != 0:
+            print(f'num of frames is: {frames}')
+            print(f'session length is: {session_length}')
+            print(f'total frames are: {total_frames}')
+            room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['NoMask'] = format((no_mask_frames/frames) * session_length,".2f")
+            room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['Mask'] =  format((mask_frames/frames) * session_length, ".2f")
+            room_statistics[f'row{row_num+1}'][f'chair{col_num+1}']['Improper'] =  format((improper_frames/frames) * session_length,".2f")
 
 
 
@@ -130,11 +133,7 @@ def get_sec(time_str):
     s = s.split('.')[0]
     return int(h) * 3600 + int(m) * 60 + int(s)
 
-def handler(signum, frame):
-    # print('here')
-    # new_loop.stop()
-    # print('sucsses')
-    # Print results
+def save_results():
     import datetime
 
     end_time = datetime.datetime.now()
@@ -143,12 +142,19 @@ def handler(signum, frame):
     session_length = end_time - start_time
     format_room_statistics_to_seconds(get_sec(str(session_length)))
     db.child("Users").child("Video2").set({'Date': json.dumps(date.today(), indent=4, default=str),
-                                            'Time': json.dumps(exit_time, indent=4, default=str),
+                                            'Time At End': json.dumps(exit_time, indent=4, default=str),
+                                            'Time At Start': json.dumps(start_time, indent=4, default=str),
                                             'Duration': json.dumps(str(session_length), indent=4, default=str),
                                             'Statistics':  json.dumps(room_statistics, indent=4)})
     with open('room_statistics.json', 'w') as f:
         json.dump(room_statistics, f, indent=4)
-    time.sleep(2)
+
+def handler(signum, frame):
+    # print('here')
+    # new_loop.stop()
+    # print('sucsses')
+    # Print results
+    save_results()
     os.kill(os.getpid(), signal.SIGTERM)
     
 
@@ -188,12 +194,6 @@ def detect_chairs():
                 start_main = True
                 not_created = False
 
-                import datetime
-                global start_time
-                start_time = datetime.datetime.now()
-                current_time = start_time.strftime("%H:%M:%S")
-                db.child("Users").child("Video2").set({'Time At Start': current_time})
-
                 return room_config
         except IOError:
             time.sleep(1)
@@ -218,7 +218,6 @@ firebase = pyrebase.initialize_app(config)
 global db
 db = firebase.database()
 from datetime import datetime
-
 
 
 @torch.no_grad()
@@ -282,10 +281,16 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
         bs = 1  # batch_size
     vid_path, vid_writer = [None] * bs, [None] * bs
-
+    global frames
+    frames = 0  
     # Run inference
     model.warmup(imgsz=(1, 3, *imgsz), half=half)  # warmup
     dt, seen = [0.0, 0.0, 0.0], 0
+    import datetime
+    global start_time
+    start_time = datetime.datetime.now()
+    current_time = start_time.strftime("%H:%M:%S")
+    db.child("Users").child("Video2").set({'Time At Start': current_time})
     for path, im, im0s, vid_cap, s in dataset:
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
@@ -321,6 +326,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
             global images_arr
             images_arr = []
             images_arr.append(im0)
+            
             p = Path(p)  # to Path
             save_path = str(save_dir / p.name)  # im.jpg
             txt_path = str(save_dir / 'labels' / p.stem) + ('' if dataset.mode == 'image' else f'_{frame}')  # im.txt
@@ -367,7 +373,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         row, col = calc_nearest_rectangle(center_x, center_y)
                         print(f'row is: {row} col is{col}')
                         label = label.split(' ')[0]
-                        room_statistics[f'row{row}'][f'chair{col}'][label] += 0.1
+                        room_statistics[f'row{row}'][f'chair{col}'][label] += 1
                         images_arr.append({'img':cropped_face, 'label': label, 'row': row, 'col': col})
                         #except:
                             #print('label doesnt exist')
@@ -377,7 +383,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
 
             # Print time (inference-only)
             LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
-            
+            frames += 1
             # Stream results
             im0 = annotator.result()
             if view_img:
@@ -405,19 +411,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                     vid_writer[i].write(im0)
 
     # Print results
-    import datetime
-
-    end_time = datetime.datetime.now()
-
-    exit_time = end_time.strftime("%H:%M:%S")
-    session_length = end_time - start_time
-    format_room_statistics_to_seconds(get_sec(str(session_length)))
-    db.child("Users").child("Video2").set({'Date': json.dumps(date.today(), indent=4, default=str),
-                                            'Time': json.dumps(exit_time, indent=4, default=str),
-                                            'Duration': json.dumps(str(session_length), indent=4, default=str),
-                                            'Statistics':  json.dumps(room_statistics, indent=4)})
-    with open('room_statistics.json', 'w') as f:
-        json.dump(room_statistics, f, indent=4)
+    save_results()
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
     if save_txt or save_img:
