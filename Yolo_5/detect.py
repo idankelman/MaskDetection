@@ -75,7 +75,7 @@ def get_response_image(img):
 import websockets
 import asyncio
 import time
-async def handler(websocket, path):
+async def handler1(websocket, path):
     while True:
         try:
             if len(images_arr)==0:
@@ -102,9 +102,10 @@ def start_loop(loop, server):
     
 
 new_loop = asyncio.get_event_loop()
-start_server1 = websockets.serve(handler, "127.0.0.1", 5000, loop=new_loop)
+start_server1 = websockets.serve(handler1, "127.0.0.1", 5000, loop=new_loop)
 global t
 t = threading.Thread(target=start_loop, args=(new_loop, start_server1))
+t.daemon = True
 t.start()
 import signal
 
@@ -200,6 +201,20 @@ def detect_chairs():
             print('waiting for json')    
 
 
+@app.route('/endSession')
+def end_session():
+    def finish():
+        save_results()
+        os.kill(os.getpid(), signal.SIGTERM)
+
+    thread = threading.Thread(target=finish, args=[])
+    thread.start()
+    
+    return "Sucsses, Session saved to Database"
+   
+
+
+global th
 th = threading.Thread(target=lambda: app.run(host="localhost", port=3000, debug=True, use_reloader=False))
 th.daemon = True
 th.start()
