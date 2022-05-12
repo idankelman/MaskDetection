@@ -100,7 +100,8 @@ def start_loop(loop, server):
     loop.run_until_complete(server)
     loop.run_forever()
     
-
+global id_for_session
+id_for_session = time.time()
 new_loop = asyncio.get_event_loop()
 start_server1 = websockets.serve(handler1, "127.0.0.1", 5000, loop=new_loop)
 global t
@@ -142,7 +143,7 @@ def save_results():
     exit_time = end_time.strftime("%H:%M:%S")
     session_length = end_time - start_time
     format_room_statistics_to_seconds(get_sec(str(session_length)))
-    db.child("Users").child("Video2").set({'Date': json.dumps(date.today(), indent=4, default=str),
+    db.child("Users").child(date.today()).child(formatted_start_time).set({'Date': json.dumps(date.today(), indent=4, default=str),
                                             'Time At End': json.dumps(exit_time, indent=4, default=str),
                                             'Time At Start': json.dumps(start_time, indent=4, default=str),
                                             'Duration': json.dumps(str(session_length), indent=4, default=str),
@@ -304,8 +305,9 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
     import datetime
     global start_time
     start_time = datetime.datetime.now()
-    current_time = start_time.strftime("%H:%M:%S")
-    db.child("Users").child("Video2").set({'Time At Start': current_time})
+    global formatted_start_time
+    formatted_start_time = start_time.strftime("%H:%M:%S")
+    db.child("Users").child(date.today()).child(formatted_start_time).set({'Time At Start': formatted_start_time})
     for path, im, im0s, vid_cap, s in dataset:
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
