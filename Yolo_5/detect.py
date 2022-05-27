@@ -106,7 +106,6 @@ new_loop = asyncio.get_event_loop()
 start_server1 = websockets.serve(handler1, "127.0.0.1", 5000, loop=new_loop)
 global t
 t = threading.Thread(target=start_loop, args=(new_loop, start_server1))
-t.daemon = True
 t.start()
 import signal
 
@@ -170,7 +169,7 @@ import subprocess
 @app.route('/roomConfig')
 def detect_chairs():
     #TODO change the source to cv2.read()
-    program = 'python roomConfig/yolov5-master/detect.py --class 56 --source roomConfig/yolov5-master/test3.jpg'
+    program = 'python roomConfig/yolov5-master/detect.py --agnostic --weights roomConfig/yolov5-master/best2.pt --conf 0.3 --source roomConfig/yolov5-master/test8.jpg'
     processes = subprocess.Popen(program)
     processes.wait()
     not_created = True
@@ -217,7 +216,6 @@ def end_session():
 
 global th
 th = threading.Thread(target=lambda: app.run(host="localhost", port=3000, debug=True, use_reloader=False))
-th.daemon = True
 th.start()
 import pyrebase
 config = {'apiKey': "AIzaSyBnU_-WiH0q9nvVyNZ82DgrMi1RMrSOJQk",

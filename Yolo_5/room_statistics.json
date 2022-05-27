@@ -1,24 +1,17 @@
 {
     "row1": {
         "chair1": {
-            "NoMask": "0.00",
-            "Mask": "0.00",
-            "Improper": "0.00"
-        }
-    },
-    "row2": {
-        "chair1": {
-            "NoMask": "0.00",
+            "NoMask": "5.38",
             "Mask": "0.00",
             "Improper": "0.00"
         },
         "chair2": {
-            "NoMask": "0.00",
+            "NoMask": "2.53",
             "Mask": "0.00",
             "Improper": "0.00"
         },
         "chair3": {
-            "NoMask": "0.00",
+            "NoMask": "1.27",
             "Mask": "0.00",
             "Improper": "0.00"
         },
@@ -31,13 +24,38 @@
             "NoMask": "0.00",
             "Mask": "0.00",
             "Improper": "0.00"
+        },
+        "chair6": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair7": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair8": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair9": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair10": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
         }
     },
-    "row3": {
+    "row2": {
         "chair1": {
-            "NoMask": "0.94",
+            "NoMask": "0.95",
             "Mask": "0.00",
-            "Improper": "1.06"
+            "Improper": "0.00"
         },
         "chair2": {
             "NoMask": "0.00",
@@ -60,6 +78,78 @@
             "Improper": "0.00"
         },
         "chair6": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair7": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair8": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair9": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair10": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        }
+    },
+    "row3": {
+        "chair1": {
+            "NoMask": "52.52",
+            "Mask": "4.75",
+            "Improper": "2.21"
+        },
+        "chair2": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair3": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair4": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair5": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair6": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair7": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair8": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair9": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair10": {
             "NoMask": "0.00",
             "Mask": "0.00",
             "Improper": "0.00"
@@ -95,9 +185,175 @@
             "NoMask": "0.00",
             "Mask": "0.00",
             "Improper": "0.00"
+        },
+        "chair7": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair8": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair9": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
         }
     },
     "row5": {
+        "chair1": {
+            "NoMask": "16.45",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair2": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair3": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair4": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair5": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair6": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair7": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair8": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair9": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair10": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair11": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        }
+    },
+    "row6": {
+        "chair1": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair2": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair3": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair4": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair5": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair6": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair7": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair8": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair9": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        }
+    },
+    "row7": {
+        "chair1": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair2": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair3": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair4": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair5": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair6": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair7": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair8": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        },
+        "chair9": {
+            "NoMask": "0.00",
+            "Mask": "0.00",
+            "Improper": "0.00"
+        }
+    },
+    "row8": {
         "chair1": {
             "NoMask": "0.00",
             "Mask": "0.00",

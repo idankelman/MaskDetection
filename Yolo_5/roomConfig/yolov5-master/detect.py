@@ -191,7 +191,6 @@ def run(
                    
                     
             import collections
-            print(class_config)
             temp = collections.OrderedDict(sorted(class_config.items(), key=lambda t:t[1]["y0"]))
             chairs_ordered = {}
             row_num = 1
@@ -210,10 +209,10 @@ def run(
                     chairs_ordered[f'row{row_num}'][f'chair{row_count}'] = list(temp.values())[i]
                     row_count+=1
             #inserting last element
-            if list(temp.values())[len(temp)-1]['y0']- list(temp.values())[len(temp)-2]['y0'] > 20:
-                chairs_ordered[f'row{row_num+1}'][f'chair1'] = list(temp.values())[len(temp)-1]
-            else:
-                chairs_ordered[f'row{row_num}'][f'chair{row_count}'] = list(temp.values())[len(temp)-1]
+            # if list(temp.values())[len(temp)-1]['y0']- list(temp.values())[len(temp)-2]['y0'] > 20:
+            #     chairs_ordered[f'row{row_num+1}'][f'chair1'] = list(temp.values())[len(temp)-1]
+            # else:
+            #     chairs_ordered[f'row{row_num}'][f'chair{row_count}'] = list(temp.values())[len(temp)-1]
             
             #sorting the chairs by x to find out left to right order of chairs
             for i in range (0, len(chairs_ordered)):
@@ -242,6 +241,7 @@ def run(
                 if dataset.mode == 'image':
                     cv2.imwrite(save_path, im0)
                 else:  # 'video' or 'stream'
+                    print(vid_path)
                     if vid_path[i] != save_path:  # new video
                         vid_path[i] = save_path
                         if isinstance(vid_writer[i], cv2.VideoWriter):
