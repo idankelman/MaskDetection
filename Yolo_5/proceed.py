@@ -5,7 +5,8 @@ import torch
 
 # print(torch.cuda.is_available())
 print(torch.__version__)
-filename=input('please enter file name that you want to detect')
+#filename=input('please enter file name that you want to detect')
+filename = 0
 os.system('python detect.py --agnostic --weights best.pt --conf 0.6 --source {}'.format(filename))
 #os.system('python detect.py --weights best.pt --img 416 --conf 0.4 --source 0')
 

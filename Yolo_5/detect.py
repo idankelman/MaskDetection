@@ -134,6 +134,7 @@ def get_sec(time_str):
     s = s.split('.')[0]
     return int(h) * 3600 + int(m) * 60 + int(s)
 
+
 def save_results():
     import datetime
 
@@ -144,9 +145,19 @@ def save_results():
     format_room_statistics_to_seconds(get_sec(str(session_length)))
     db.child("Users").child(date.today()).child(formatted_start_time).set({'Date': json.dumps(date.today(), indent=4, default=str),
                                             'Time At End': json.dumps(exit_time, indent=4, default=str),
-                                            'Time At Start': json.dumps(start_time, indent=4, default=str),
+                                            'Time At Start': json.dumps(formatted_start_time, indent=4, default=str),
                                             'Duration': json.dumps(str(session_length), indent=4, default=str),
                                             'Statistics':  json.dumps(room_statistics, indent=4)})
+    for i in range(len(representing_images)):
+        for j in range(len(representing_images[i])):
+            if representing_images[i][j] is not None:
+              
+                #print(representing_images[i][j])
+                #bucket = storage.bucket()
+                imageRGB = cv2.cvtColor(representing_images[i][j], cv2.COLOR_BGR2RGB)
+                imageRGB=imageRGB[:,:,::-1]
+                cv2.imwrite(f'img{i}{j}.jpg', imageRGB)
+                storage.child(f'Images/{date.today()}_{formatted_start_time}/row_{i+1}_chair_{j+1}.jpg').put(f'img{i}{j}.jpg')
     with open('room_statistics.json', 'w') as f:
         json.dump(room_statistics, f, indent=4)
 
@@ -179,22 +190,27 @@ def detect_chairs():
                 global room_config
                 global rectangle_center
                 global room_statistics
+                global representing_images
                 room_statistics = {}
                 rectangle_center = []
+                representing_images = []
                 room_config = json.load(f)
                 i=0
+                
                 for i, row in enumerate(room_config):
                     rectangle_center.append([])
+                    representing_images.append([])
                     room_statistics[f'row{i+1}'] = {}
                     for j, chair in enumerate(room_config[row]):
                         room_statistics[f'row{i+1}'][f'chair{j+1}'] = {'NoMask': 0, 'Mask': 0, 'Improper': 0}
+                        representing_images[i].append(None)
                         rectangle_center[i].append({'x_center': (int(room_config[row][chair]['x0'])+ int(room_config[row][chair]['x1']))/2,  
                                                       'y_center': (int(room_config[row][chair]['y0'])+ int(room_config[row][chair]['y1']))/2})
                     i+=1
                 global start_main
                 start_main = True
                 not_created = False
-
+                print(representing_images)
                 return room_config
         except IOError:
             time.sleep(1)
@@ -229,6 +245,9 @@ config = {'apiKey': "AIzaSyBnU_-WiH0q9nvVyNZ82DgrMi1RMrSOJQk",
 }
 from datetime import date
 firebase = pyrebase.initialize_app(config)
+global storage
+storage = firebase.storage()
+# storage.child("Images/").put("roomConfig/yolov5-master/test3.jpg")
 global db
 db = firebase.database()
 from datetime import datetime
@@ -302,6 +321,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
     dt, seen = [0.0, 0.0, 0.0], 0
     import datetime
     global start_time
+    global representing_images
     start_time = datetime.datetime.now()
     global formatted_start_time
     formatted_start_time = start_time.strftime("%H:%M:%S")
@@ -386,6 +406,8 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         center_y = (int(xyxy[3].numpy())- int(xyxy[1].numpy()))/2 + int(xyxy[1].numpy())
                         print(f'center x is: {center_x}, center y is: {center_y}')
                         row, col = calc_nearest_rectangle(center_x, center_y)
+                        if representing_images[row-1][col-1] is None:
+                            representing_images[row-1][col-1] = cropped_face
                         print(f'row is: {row} col is{col}')
                         label = label.split(' ')[0]
                         room_statistics[f'row{row}'][f'chair{col}'][label] += 1
@@ -498,4 +520,10 @@ if __name__ == "__main__":
     opt = parse_opt()
     while start_main == False:
         time.sleep(0.5)
+    # try:
     main(opt)
+    # except Exception as e:
+    #     try:
+    #         save_results()
+    #     except Exception as e:
+    #         print(e)
